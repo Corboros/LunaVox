@@ -1,12 +1,12 @@
-import { useState } from "react";
 import { useListConsultants, useGetFeaturedConsultants } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Star, Crown, MessageCircle } from "lucide-react";
+import { Star, Crown, MessageCircle, Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ZODIAC_SIGNS } from "@/lib/constants";
+import { Link } from "wouter";
 
 export default function ConsultantsTab() {
   const { data: consultants, isLoading } = useListConsultants();
@@ -61,8 +61,36 @@ export default function ConsultantsTab() {
               </div>
             </div>
           )}
+
+          {/* Empty state */}
+          {(!consultants || consultants.length === 0) && (!featured || featured.length === 0) && (
+            <div className="text-center py-16 text-[#a89bc4]">
+              <Crown className="w-12 h-12 mx-auto mb-4 opacity-30" />
+              <p className="text-lg">Aucun consultant disponible pour le moment.</p>
+            </div>
+          )}
         </div>
       )}
+
+      {/* Become a Consultant CTA */}
+      <div className="relative overflow-hidden rounded-2xl border border-[#7c5cbf]/30 bg-gradient-to-br from-[#1a1230] via-background to-[#0d0a1a] p-8 text-center">
+        <div className="absolute inset-0 opacity-10 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse at 50% 0%, #7c5cbf 0%, transparent 70%)" }} />
+        <Sparkles className="w-8 h-8 text-[#d4a843] mx-auto mb-4 opacity-80" />
+        <h3 className="font-serif text-2xl text-white mb-2">Vous avez un don à partager ?</h3>
+        <p className="text-[#a89bc4] mb-6 max-w-md mx-auto">
+          Rejoignez notre cercle de praticiens et guidez les âmes en quête de réponses.
+        </p>
+        <Link href="/app/become-consultant">
+          <Button
+            data-testid="button-become-consultant"
+            className="bg-[#7c5cbf] hover:bg-[#6a4ca3] text-white px-8 h-12 font-serif text-base shadow-lg shadow-[#7c5cbf]/20"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Devenir consultant
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }
