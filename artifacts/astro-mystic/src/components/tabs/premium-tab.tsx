@@ -77,7 +77,7 @@ export default function PremiumTab() {
             </div>
 
             <ul className="space-y-4 mb-8 flex-1">
-              {["Horoscopes quotidiens détaillés", "Tests de compatibilité illimités", "Accès prioritaire aux consultants", "Pas d'engagement"].map((feature, i) => (
+              {["Horoscopes quotidiens détaillés", "Tests de compatibilité illimités", "Accès prioritaire aux consultants", "Navigation sans publicité", "Pas d'engagement"].map((feature, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <div className="p-1 bg-[#7c5cbf]/20 rounded-full shrink-0">
                     <Check className="w-3 h-3 text-[#7c5cbf]" />
@@ -115,7 +115,7 @@ export default function PremiumTab() {
             </div>
 
             <ul className="space-y-4 mb-8 flex-1">
-              {["Horoscopes quotidiens détaillés", "Tests de compatibilité illimités", "Accès prioritaire aux consultants", "Badge exclusif sur votre profil", "1 consultation offerte par an"].map((feature, i) => (
+              {["Horoscopes quotidiens détaillés", "Tests de compatibilité illimités", "Accès prioritaire aux consultants", "Navigation entièrement sans publicité", "Badge exclusif sur votre profil", "1 consultation offerte par an"].map((feature, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <div className="p-1 bg-[#d4a843]/20 rounded-full shrink-0">
                     <Check className="w-3 h-3 text-[#d4a843]" />

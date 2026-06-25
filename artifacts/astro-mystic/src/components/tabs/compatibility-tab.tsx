@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { ZODIAC_SIGNS } from "@/lib/constants";
 import { useGetCompatibility, getGetCompatibilityQueryKey, useGetCompatibilityUsage } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Sparkles, X, Heart, AlertCircle, Crown, Lock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { AdBanner } from "@/components/layout/ad-banner";
 
 export default function CompatibilityTab() {
   const [sign1, setSign1] = useState<string>("");
@@ -45,6 +46,9 @@ export default function CompatibilityTab() {
         <h2 className="font-serif text-3xl md:text-4xl text-white">Compatibilité Astrale</h2>
         <p className="text-[#a89bc4]">Découvrez l'harmonie cosmique entre deux signes.</p>
       </div>
+
+      {/* Ad banner for non-premium users */}
+      <AdBanner slot="leaderboard" />
 
       {!calculate ? (
         <Card className="p-6 md:p-10 bg-card/80 border-[#7c5cbf]/30 backdrop-blur">

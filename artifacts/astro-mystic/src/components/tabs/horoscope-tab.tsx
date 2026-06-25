@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { ZODIAC_SIGNS } from "@/lib/constants";
 import { useGetDailyHoroscope, getGetDailyHoroscopeQueryKey } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Heart, Briefcase, Activity, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AdBanner } from "@/components/layout/ad-banner";
 
 export default function HoroscopeTab() {
   const [selectedSign, setSelectedSign] = useState<string | null>(null);
@@ -54,8 +55,11 @@ export default function HoroscopeTab() {
         ))}
       </div>
 
+      {/* Ad banner between sign grid and reveal button */}
+      <AdBanner slot="leaderboard" />
+
       {selectedSign && !reveal && (
-        <div className="flex justify-center pt-8">
+        <div className="flex justify-center pt-4">
           <Button 
             onClick={() => setReveal(true)}
             size="lg" 
