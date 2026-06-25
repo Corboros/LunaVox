@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0612;
+    --bg2: #110d1e;
+    --bg3: #1a1230;
+    --purple: #7c5cbf;
+    --purple2: #a07de0;
+    --purple3: #c9a9f5;
+    --gold: #d4a843;
+    --gold2: #f0c862;
+    --text: #e8e0f5;
+    --text2: #a89bc4;
+    --border: rgba(124,92,191,0.3);
+    --card: rgba(26,18,48,0.95);
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Georgia', serif; min-height: 100vh; }
+
+  .stars-bg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse at 20% 20%, rgba(124,92,191,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, rgba(212,168,67,0.05) 0%, transparent 60%);
+  }
+
+  .app { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 0 0 80px; }
+
+  .header {
+    text-align: center; padding: 28px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(10,6,18,0.98) 0%, transparent 100%);
+  }
+  .logo { font-size: 13px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; }
+  .app-name { font-size: 26px; color: var(--text); font-weight: 300; letter-spacing: 1px; }
+  .app-name span { color: var(--purple3); }
+
+  .nav {
+    display: flex; gap: 0;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .nav-btn {
+    flex: 1; padding: 12px 4px; background: none; border: none; color: var(--text2);
+    font-size: 11px; cursor: pointer; transition: all 0.2s; font-family: inherit;
+    letter-spacing: 1px; text-transform: uppercase; border-bottom: 2px solid transparent;
+  }
+  .nav-btn.active { color: var(--purple3); border-bottom-color: var(--purple); background: rgba(124,92,191,0.08); }
+  .nav-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.03); }
+
+  .section { display: none; padding: 20px 16px; }
+  .section.active { display: block; }
+
+  .section-title {
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 20px; text-align: center;
+  }
+
+  .sign-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 24px;
+  }
+  .sign-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 6px; text-align: center; cursor: pointer; transition: all 0.2s;
+  }
+  .sign-card:hover, .sign-card.selected {
+    border-color: var(--purple); background: rgba(124,92,191,0.15);
+  }
+  .sign-card.selected { border-color: var(--gold); }
+  .sign-emoji { font-size: 22px; display: block; margin-bottom: 4px; }
+  .sign-name { font-size: 10px; color: var(--text2); letter-spacing: 0.5px; }
+
+  .oracle-btn {
+    width: 100%; padding: 14px; background: linear-gradient(135deg, var(--purple), #4a2d8a);
+    border: 1px solid var(--purple2); border-radius: 10px; color: var(--text);
+    font-family: inherit; font-size: 14px; cursor: pointer; letter-spacing: 1px;
+    transition: all 0.2s; margin-bottom: 16px;
+  }
+  .oracle-btn:hover { background: linear-gradient(135deg, var(--purple2), var(--purple)); transform: translateY(-1px); }
+  .oracle-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .result-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px; margin-top: 16px; animation: fadeIn 0.5s ease;
+  }
+  .result-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .result-emoji { font-size: 36px; }
+  .result-sign-name { font-size: 18px; color: var(--purple3); }
+  .result-date { font-size: 11px; color: var(--gold); letter-spacing: 1px; margin-top: 2px; }
+  .result-text { font-size: 14px; line-height: 1.8; color: var(--text); font-style: italic; }
+
+  .domains {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px;
+  }
+  .domain-card {
+    background: rgba(124,92,191,0.1); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 8px; text-align: center;
+  }
+  .domain-icon { font-size: 16px; margin-bottom: 4px; display: block; }
+  .domain-label { font-size: 10px; color: var(--text2); letter-spacing: 0.5px; }
+  .domain-stars { color: var(--gold); font-size: 11px; margin-top: 2px; }
+
+  .loading-dots {
+    display: flex; justify-content: center; gap: 6px; padding: 20px;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--purple);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  .compat-section { }
+  .compat-row { display: flex; gap: 12px; margin-bottom: 16px; }
+  .compat-col { flex: 1; }
+  .compat-label { font-size: 11px; color: var(--gold); letter-spacing: 1px; margin-bottom: 8px; display: block; text-align: center; }
+  .sign-select {
+    width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px; color: var(--text); font-family: inherit; font-size: 14px;
+    appearance: none; cursor: pointer; text-align: center;
+  }
+  .sign-select:focus { outline: none; border-color: var(--purple); }
+
+  .compat-heart {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; padding-top: 20px;
+  }
+
+  .score-bar-container { margin: 16px 0; }
+  .score-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; color: var(--text2); }
+  .score-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+  .score-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--purple), var(--gold)); transition: width 0.8s ease; }
+
+  .consultants { display: flex; flex-direction: column; gap: 12px; }
+  .consultant-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px; display: flex; gap: 12px; align-items: flex-start; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .consultant-card:hover { border-color: var(--purple); background: rgba(124,92,191,0.1); }
+  .consultant-avatar {
+    width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 22px; flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(124,92,191,0.3), rgba(212,168,67,0.2));
+    border: 1px solid var(--border);
+  }
+  .consultant-info { flex: 1; }
+  .consultant-name { font-size: 15px; color: var(--purple3); margin-bottom: 2px; }
+  .consultant-spec { font-size: 11px; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .consultant-bio { font-size: 12px; color: var(--text2); line-height: 1.5; margin-bottom: 8px; }
+  .consultant-footer { display: flex; align-items: center; justify-content: space-between; }
+  .consultant-stars { color: var(--gold); font-size: 12px; }
+  .consultant-price { font-size: 13px; color: var(--text); }
+
+  .book-btn {
+    padding: 7px 14px; background: rgba(124,92,191,0.2); border: 1px solid var(--purple);
+    border-radius: 6px; color: var(--purple3); font-size: 12px; cursor: pointer;
+    font-family: inherit; transition: all 0.2s;
+  }
+  .book-btn:hover { background: rgba(124,92,191,0.4); }
+
+  .premium-card {
+    background: linear-gradient(135deg, rgba(26,18,48,0.98), rgba(40,24,70,0.98));
+    border: 1px solid var(--gold); border-radius: 16px; padding: 24px; text-align: center;
+    margin-bottom: 20px;
+  }
+  .premium-crown { font-size: 32px; margin-bottom: 12px; display: block; }
+  .premium-title { font-size: 20px; color: var(--gold2); margin-bottom: 8px; }
+  .premium-sub { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 20px; }
+  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .plan-card {
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px; cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .plan-card.best { border-color: var(--gold); background: rgba(212,168,67,0.08); }
+  .plan-badge { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; display: block; }
+  .plan-price { font-size: 22px; color: var(--text); font-weight: 300; }
+  .plan-period { font-size: 11px; color: var(--text2); }
+  .plan-desc { font-size: 11px; color: var(--text2); margin-top: 4px; }
+  .features { text-align: left; margin-bottom: 20px; }
+  .feature { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .feature-icon { color: var(--gold); font-size: 14px; flex-shrink: 0; }
+  .cta-btn {
+    width: 100%; padding: 15px; background: linear-gradient(135deg, #c9a94a, #f0c862);
+    border: none; border-radius: 10px; color: #1a1200; font-family: inherit;
+    font-size: 15px; font-weight: 600; cursor: pointer; letter-spacing: 0.5px;
+    transition: all 0.2s;
+  }
+  .cta-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); z-index: 200; display: flex;
+    align-items: flex-end; justify-content: center;
+  }
+  .modal-sheet {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0; padding: 24px; width: 100%; max-width: 480px;
+    animation: slideUp 0.3s ease;
+  }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+  .modal-title { font-size: 18px; color: var(--purple3); text-align: center; margin-bottom: 6px; }
+  .modal-sub { font-size: 12px; color: var(--text2); text-align: center; margin-bottom: 20px; }
+  .modal-close-btn {
+    width: 100%; padding: 12px; background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border); border-radius: 8px; color: var(--text2);
+    font-family: inherit; font-size: 14px; cursor: pointer; margin-top: 10px;
+  }
+  .confirm-btn {
+    width: 100%; padding: 14px; background: linear-gradient(135deg, var(--purple), #4a2d8a);
+    border: none; border-radius: 10px; color: var(--text); font-family: inherit;
+    font-size: 14px; cursor: pointer; margin-bottom: 8px; letter-spacing: 0.5px;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  .tag { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.5px; margin: 2px; }
+  .tag-purple { background: rgba(124,92,191,0.2); color: var(--purple3); border: 1px solid rgba(124,92,191,0.3); }
+  .tag-gold { background: rgba(212,168,67,0.15); color: var(--gold2); border: 1px solid rgba(212,168,67,0.3); }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text2); font-size: 13px; line-height: 1.8; }
+  .empty-icon { font-size: 40px; display: block; margin-bottom: 12px; opacity: 0.5; }
+</style>
+</head>
+<body>
+<div class="stars-bg"></div>
+<div class="app">
+  <div class="header">
+    <div class="logo">✦ oracle mystique ✦</div>
+    <div class="app-name">Astro<span>Mystic</span></div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showTab('horoscope')">✨ Horoscope</button>
+    <button class="nav-btn" onclick="showTab('compat')">♾ Compatibilité</button>
+    <button class="nav-btn" onclick="showTab('consultants')">🔮 Consultants</button>
+    <button class="nav-btn" onclick="showTab('premium')">⭐ Premium</button>
+  </nav>
+
+  <div id="tab-horoscope" class="section active">
+    <p class="section-title">Ton horoscope du jour</p>
+    <div class="sign-grid" id="signGrid"></div>
+    <button class="oracle-btn" id="horoBtn" onclick="getHoroscope()" disabled>
+      ✦ Révéler mon horoscope ✦
+    </button>
+    <div id="horoResult"></div>
+  </div>
+
+  <div id="tab-compat" class="section">
+    <p class="section-title">Compatibilité amoureuse</p>
+    <div class="compat-row">
+      <div class="compat-col">
+        <span class="compat-label">Ton signe</span>
+        <select class="sign-select" id="sign1" onchange="resetCompat()">
+          <option value="">Choisir...</option>
+        </select>
+      </div>
+      <div class="compat-heart">💜</div>
+      <div class="compat-col">
+        <span class="compat-label">Son signe</span>
+        <select class="sign-select" id="sign2" onchange="resetCompat()">
+          <option value="">Choisir...</option>
+        </select>
+      </div>
+    </div>
+    <button class="oracle-btn" onclick="getCompat()">✦ Révéler la compatibilité ✦</button>
+    <div id="compatResult"></div>
+  </div>
+
+  <div id="tab-consultants" class="section">
+    <p class="section-title">Nos médiums & conseillers</p>
+    <div class="consultants" id="consultantsList"></div>
+  </div>
+
+  <div id="tab-premium" class="section">
+    <div class="premium-card">
+      <span class="premium-crown">👑</span>
+      <div class="premium-title">AstroMystic Premium</div>
+      <div class="premium-sub">Accède à l'intégralité de tes astres. Thème natal complet, prédictions mensuelles, et consultations illimitées.</div>
+      <div class="plan-grid">
+        <div class="plan-card" onclick="selectPlan(this, 'mensuel')">
+          <span class="plan-badge">mensuel</span>
+          <div class="plan-price">6,99€</div>
+          <div class="plan-period">/mois</div>
+          <div class="plan-desc">Résiliable</div>
+        </div>
+        <div class="plan-card best" onclick="selectPlan(this, 'annuel')">
+          <span class="plan-badge">⭐ meilleur prix</span>
+          <div class="plan-price">3,99€</div>
+          <div class="plan-period">/mois</div>
+          <div class="plan-desc">Facturé 47,88€/an</div>
+        </div>
+      </div>
+      <div class="features">
+        <div class="feature"><span class="feature-icon">✦</span>Horoscope personnalisé quotidien</div>
+        <div class="feature"><span class="feature-icon">✦</span>Thème natal & carte du ciel complète</div>
+        <div class="feature"><span class="feature-icon">✦</span>Compatibilité approfondie</div>
+        <div class="feature"><span class="feature-icon">✦</span>Prédictions mensuelles & annuelles</div>
+        <div class="feature"><span class="feature-icon">✦</span>1 consultation gratuite/mois</div>
+        <div class="feature"><span class="feature-icon">✦</span>Notifications lunaisons & rétrogrades</div>
+      </div>
+      <button class="cta-btn" onclick="subscribe()">Commencer mon essai gratuit 7 jours</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal" style="display:none;" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-sheet" id="modalContent"></div>
+</div>
+
+<script>
+const SIGNS = [
+  {name:'Bélier', emoji:'♈', dates:'21 mar – 19 avr', element:'Feu', planet:'Mars'},
+  {name:'Taureau', emoji:'♉', dates:'20 avr – 20 mai', element:'Terre', planet:'Vénus'},
+  {name:'Gémeaux', emoji:'♊', dates:'21 mai – 20 jun', element:'Air', planet:'Mercure'},
+  {name:'Cancer', emoji:'♋', dates:'21 jun – 22 jul', element:'Eau', planet:'Lune'},
+  {name:'Lion', emoji:'♌', dates:'23 jul – 22 aoû', element:'Feu', planet:'Soleil'},
+  {name:'Vierge', emoji:'♍', dates:'23 aoû – 22 sep', element:'Terre', planet:'Mercure'},
+  {name:'Balance', emoji:'♎', dates:'23 sep – 22 oct', element:'Air', planet:'Vénus'},
+  {name:'Scorpion', emoji:'♏', dates:'23 oct – 21 nov', element:'Eau', planet:'Pluton'},
+  {name:'Sagittaire', emoji:'♐', dates:'22 nov – 21 déc', element:'Feu', planet:'Jupiter'},
+  {name:'Capricorne', emoji:'♑', dates:'22 déc – 19 jan', element:'Terre', planet:'Saturne'},
+  {name:'Verseau', emoji:'♒', dates:'20 jan – 18 fév', element:'Air', planet:'Uranus'},
+  {name:'Poissons', emoji:'♓', dates:'19 fév – 20 mar', element:'Eau', planet:'Neptune'}
+];
+
+const CONSULTANTS = [
+  {name:'Madame Séléné', spec:'Tarologue & Médium', bio:'15 ans d\'expérience. Spécialiste des relations amoureuses et des chemins de vie.', stars:'★★★★★', rating:'4.9', reviews:'342', price:'15€ / 15 min', emoji:'🌙', tags:['Tarot','Amour','Avenir']},
+  {name:'Ophélie des Étoiles', spec:'Astrologue Natale', bio:'Lectures de thèmes nataux approfondies. Diplômée de l\'École Française d\'Astrologie.', stars:'★★★★★', rating:'4.8', reviews:'218', price:'20€ / 20 min', emoji:'⭐', tags:['Thème natal','Carrière','Spiritualité']},
+  {name:'Maître Azuriel', spec:'Numérologie & Kabbale', bio:'Explore les vibrations de ton chemin de vie à travers les nombres sacrés.', stars:'★★★★☆', rating:'4.6', reviews:'156', price:'12€ / 15 min', emoji:'🔮', tags:['Numérologie','Destin','Chakras']},
+  {name:'Luna Cristal', spec:'Voyante & Cartomancienne', bio:'Lecture aux cartes divinatoires. Spécialiste des blocages émotionnels et de la guérison.', stars:'★★★★★', rating:'4.7', reviews:'289', price:'18€ / 20 min', emoji:'💎', tags:['Voyance','Cristaux','Émotion']}
+];
+
+let selectedSign = null;
+let selectedPlanEl = null;
+
+function initSignGrid() {
+  const grid = document.getElementById('signGrid');
+  SIGNS.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'sign-card';
+    card.innerHTML = `<span class="sign-emoji">${s.emoji}</span><span class="sign-name">${s.name}</span>`;
+    card.onclick = () => selectSign(i);
+    grid.appendChild(card);
+  });
+}
+
+function initSelects() {
+  ['sign1','sign2'].forEach(id => {
+    const sel = document.getElementById(id);
+    SIGNS.forEach((s,i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = s.emoji + ' ' + s.name;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+function initConsultants() {
+  const list = document.getElementById('consultantsList');
+  CONSULTANTS.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'consultant-card';
+    const tagsHtml = c.tags.map(t => `<span class="tag tag-purple">${t}</span>`).join('');
+    card.innerHTML = `
+      <div class="consultant-avatar">${c.emoji}</div>
+      <div class="consultant-info">
+        <div class="consultant-name">${c.name}</div>
+        <div class="consultant-spec">${c.spec}</div>
+        <div class="consultant-bio">${c.bio}</div>
+        <div style="margin-bottom:8px">${tagsHtml}</div>
+        <div class="consultant-footer">
+          <div>
+            <div class="consultant-stars">${c.stars} <span style="color:var(--text2);font-size:11px">${c.rating} (${c.reviews} avis)</span></div>
+            <div class="consultant-price" style="font-size:12px;color:var(--gold);margin-top:2px">${c.price}</div>
+          </div>
+          <button class="book-btn" onclick="bookConsultant('${c.name}','${c.price}')">Réserver</button>
+        </div>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function selectSign(i) {
+  selectedSign = i;
+  document.querySelectorAll('.sign-card').forEach((c,j) => c.classList.toggle('selected', i===j));
+  document.getElementById('horoBtn').disabled = false;
+  document.getElementById('horoResult').innerHTML = '';
+}
+
+function showTab(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+async function getHoroscope() {
+  if (selectedSign === null) return;
+  const sign = SIGNS[selectedSign];
+  const btn = document.getElementById('horoBtn');
+  const result = document.getElementById('horoResult');
+  btn.disabled = true;
+  btn.textContent = '✦ Consultation des astres... ✦';
+  result.innerHTML = `<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  const today = new Date().toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        messages:[{
+          role:'user',
+          content:`Tu es un oracle mystique et bienveillant. Génère un horoscope du jour en français pour le signe ${sign.name} (${sign.emoji}), planète ${sign.planet}, élément ${sign.element}, pour le ${today}.
+
+Réponds UNIQUEMENT en JSON valide (pas de backticks) avec ce format exact:
+{
+  "message": "Un paragraphe mystique de 4-5 phrases sur la journée, poétique et précis",
+  "amour": "une phrase courte sur l'amour",
+  "travail": "une phrase courte sur le travail/finances",
+  "sante": "une phrase courte sur l'énergie/santé",
+  "conseil": "un conseil du jour mystique et court",
+  "scores": {"amour": 75, "travail": 60, "sante": 85}
+}`
+        }]
+      })
+    });
+    const data = await resp.json();
+    let text = data.content.map(b => b.text||'').join('');
+    text = text.replace(/```json|```/g,'').trim();
+    const h = JSON.parse(text);
+    const stars = n => '★'.repeat(Math.round(n/20)) + '☆'.repeat(5-Math.round(n/20));
+    result.innerHTML = `
+      <div class="result-card">
+        <div class="result-header">
+          <div class="result-emoji">${sign.emoji}</div>
+          <div>
+            <div class="result-sign-name">${sign.name}</div>
+            <div class="result-date">${today}</div>
+          </div>
+        </div>
+        <p class="result-text">${h.message}</p>
+        <div class="domains">
+          <div class="domain-card"><span class="domain-icon">💜</span><span class="domain-label">Amour</span><div class="domain-stars">${stars(h.scores.amour)}</div><div style="font-size:10px;color:var(--text2);margin-top:4px">${h.amour}</div></div>
+          <div class="domain-card"><span class="domain-icon">💼</span><span class="domain-label">Travail</span><div class="domain-stars">${stars(h.scores.travail)}</div><div style="font-size:10px;color:var(--text2);margin-top:4px">${h.travail}</div></div>
+          <div class="domain-card"><span class="domain-icon">✨</span><span class="domain-label">Énergie</span><div class="domain-stars">${stars(h.scores.sante)}</div><div style="font-size:10px;color:var(--text2);margin-top:4px">${h.sante}</div></div>
+        </div>
+        <div style="margin-top:16px;padding:12px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:8px;">
+          <div style="font-size:10px;color:var(--gold);letter-spacing:1px;margin-bottom:4px">✦ CONSEIL DU JOUR</div>
+          <div style="font-size:13px;color:var(--text);font-style:italic">${h.conseil}</div>
+        </div>
+      </div>`;
+  } catch(e) {
+    result.innerHTML = `<div class="result-card"><p style="color:var(--text2);font-size:13px;text-align:center">Les astres sont temporairement indisponibles. Réessaie dans un instant. ✦</p></div>`;
+  }
+  btn.disabled = false;
+  btn.textContent = '✦ Révéler mon horoscope ✦';
+}
+
+function resetCompat() { document.getElementById('compatResult').innerHTML = ''; }
+
+async function getCompat() {
+  const i1 = document.getElementById('sign1').value;
+  const i2 = document.getElementById('sign2').value;
+  if (!i1 || !i2) { alert('Choisis deux signes !'); return; }
+  const s1 = SIGNS[i1], s2 = SIGNS[i2];
+  const result = document.getElementById('compatResult');
+  result.innerHTML = `<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:800,
+        messages:[{
+          role:'user',
+          content:`Tu es un oracle de l'amour mystique. Analyse la compatibilité astrologique entre ${s1.name} (${s1.element}, ${s1.planet}) et ${s2.name} (${s2.element}, ${s2.planet}).
+
+Réponds UNIQUEMENT en JSON valide (pas de backticks):
+{
+  "global": 78,
+  "amour": 82,
+  "communication": 65,
+  "valeurs": 75,
+  "message": "Un paragraphe poétique de 3-4 phrases sur cette union",
+  "forces": "Les forces de cette relation en une phrase",
+  "defis": "Les défis à surmonter en une phrase"
+}`
+        }]
+      })
+    });
+    const data = await resp.json();
+    let text = data.content.map(b => b.text||'').join('');
+    text = text.replace(/```json|```/g,'').trim();
+    const c = JSON.parse(text);
+    result.innerHTML = `
+      <div class="result-card">
+        <div class="result-header" style="justify-content:center;flex-direction:column;text-align:center">
+          <div style="font-size:32px">${s1.emoji} 💜 ${s2.emoji}</div>
+          <div style="font-size:16px;color:var(--purple3);margin-top:8px">${s1.name} & ${s2.name}</div>
+          <div style="font-size:28px;color:var(--gold2);font-weight:300;margin-top:4px">${c.global}%</div>
+          <div style="font-size:11px;color:var(--text2);letter-spacing:1px">compatibilité globale</div>
+        </div>
+        <p class="result-text" style="text-align:center;margin-bottom:16px">${c.message}</p>
+        <div class="score-bar-container"><div class="score-label"><span>💜 Amour</span><span>${c.amour}%</span></div><div class="score-bar"><div class="score-fill" style="width:${c.amour}%"></div></div></div>
+        <div class="score-bar-container"><div class="score-label"><span>💬 Communication</span><span>${c.communication}%</span></div><div class="score-bar"><div class="score-fill" style="width:${c.communication}%"></div></div></div>
+        <div class="score-bar-container"><div class="score-label"><span>🌟 Valeurs</span><span>${c.valeurs}%</span></div><div class="score-bar"><div class="score-fill" style="width:${c.valeurs}%"></div></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
+          <div style="padding:10px;background:rgba(124,92,191,0.1);border-radius:8px;border:1px solid var(--border)">
+            <div style="font-size:10px;color:var(--gold);margin-bottom:4px">✦ FORCES</div>
+            <div style="font-size:12px;color:var(--text)">${c.forces}</div>
+          </div>
+          <div style="padding:10px;background:rgba(212,168,67,0.06);border-radius:8px;border:1px solid var(--border)">
+            <div style="font-size:10px;color:var(--purple3);margin-bottom:4px">⚡ DÉFIS</div>
+            <div style="font-size:12px;color:var(--text)">${c.defis}</div>
+          </div>
+        </div>
+      </div>`;
+  } catch(e) {
+    result.innerHTML = `<div class="result-card"><p style="color:var(--text2);font-size:13px;text-align:center">Les astres sont indisponibles. Réessaie. ✦</p></div>`;
+  }
+}
+
+function bookConsultant(name, price) {
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔮 Réserver une consultation</div>
+    <div class="modal-sub">avec ${name}</div>
+    <div style="background:rgba(124,92,191,0.1);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;text-align:center">
+      <div style="font-size:20px;color:var(--gold2);margin-bottom:4px">${price}</div>
+      <div style="font-size:12px;color:var(--text2)">Paiement sécurisé • Remboursé si annulé 2h avant</div>
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:8px">CHOISIR UN CRÉNEAU</div>
+      ${['Aujourd\'hui 14h00','Aujourd\'hui 16h30','Demain 10h00','Demain 14h30'].map(t =>
+        `<div onclick="selectSlot(this)" style="padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:13px;color:var(--text2)">✦ ${t}</div>`
+      ).join('')}
+    </div>
+    <button class="confirm-btn" onclick="confirmBook('${name}')">✦ Confirmer et payer ✦</button>
+    <button class="modal-close-btn" onclick="closeModal()">Annuler</button>
+  `;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function selectSlot(el) {
+  document.querySelectorAll('[onclick^="selectSlot"]').forEach(e => {
+    e.style.borderColor = 'var(--border)'; e.style.color = 'var(--text2)';
+  });
+  el.style.borderColor = 'var(--purple)'; el.style.color = 'var(--purple3)';
+}
+
+function confirmBook(name) {
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-handle"></div>
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:16px">✨</div>
+      <div class="modal-title">Consultation confirmée !</div>
+      <div style="font-size:13px;color:var(--text2);margin:10px 0 20px;line-height:1.6">
+        ${name} t'attend. Un email de confirmation a été envoyé avec le lien de connexion.
+      </div>
+      <button class="confirm-btn" onclick="closeModal()">Parfait !</button>
+    </div>`;
+}
+
+function selectPlan(el, plan) {
+  document.querySelectorAll('.plan-card').forEach(c => c.style.borderColor = '');
+  el.style.borderColor = 'var(--gold)';
+  selectedPlanEl = plan;
+}
+
+function subscribe() {
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-handle"></div>
+    <div class="modal-title">👑 AstroMystic Premium</div>
+    <div class="modal-sub">7 jours d'essai gratuit, puis ${selectedPlanEl==='annuel'?'3,99€/mois':'6,99€/mois'}</div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:8px">MOYEN DE PAIEMENT</div>
+      <div style="padding:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text2)">💳 Carte bancaire sécurisée</div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:16px;text-align:center">
+      Aucun prélèvement avant 7 jours. Annulation possible à tout moment depuis les réglages.
+    </div>
+    <button class="confirm-btn" onclick="confirmSub()">✦ Commencer l'essai gratuit ✦</button>
+    <button class="modal-close-btn" onclick="closeModal()">Pas maintenant</button>
+  `;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function confirmSub() {
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-handle"></div>
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:16px">👑</div>
+      <div class="modal-title" style="color:var(--gold2)">Bienvenue, Initié·e !</div>
+      <div style="font-size:13px;color:var(--text2);margin:10px 0 20px;line-height:1.6">
+        Ton accès Premium est activé. Les astres n'ont plus de secrets pour toi.
+      </div>
+      <button class="confirm-btn" onclick="closeModal()">Explorer l'univers ✨</button>
+    </div>`;
+}
+
+function closeModal(e) {
+  if (!e || e.target.id === 'modal') document.getElementById('modal').style.display = 'none';
+}
+
+initSignGrid();
+initSelects();
+initConsultants();
+</script>
+</body>
+</html>

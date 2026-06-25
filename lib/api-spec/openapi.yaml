@@ -3,20 +3,29 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: AstroMystic API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: horoscope
+    description: Daily horoscope
+  - name: compatibility
+    description: Astrological compatibility
+  - name: consultants
+    description: Consultant operations
+  - name: user
+    description: User profile operations
+  - name: payments
+    description: Payment operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +33,203 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /horoscope/{sign}:
+    get:
+      operationId: getDailyHoroscope
+      tags: [horoscope]
+      summary: Get daily horoscope for a zodiac sign
+      parameters:
+        - name: sign
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Daily horoscope
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Horoscope"
+
+  /compatibility:
+    get:
+      operationId: getCompatibility
+      tags: [compatibility]
+      summary: Get compatibility between two zodiac signs
+      parameters:
+        - name: sign1
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: sign2
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Compatibility result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Compatibility"
+        "402":
+          description: Payment required - free usage exhausted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentRequired"
+
+  /compatibility/usage:
+    get:
+      operationId: getCompatibilityUsage
+      tags: [compatibility]
+      summary: Get user's compatibility test usage status
+      responses:
+        "200":
+          description: Usage status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompatibilityUsage"
+
+  /consultants:
+    get:
+      operationId: listConsultants
+      tags: [consultants]
+      summary: List all approved consultants
+      responses:
+        "200":
+          description: List of consultants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Consultant"
+    post:
+      operationId: applyAsConsultant
+      tags: [consultants]
+      summary: Apply to become a consultant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsultantApplication"
+      responses:
+        "201":
+          description: Application submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Consultant"
+        "409":
+          description: Already applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /consultants/my-profile:
+    get:
+      operationId: getMyConsultantProfile
+      tags: [consultants]
+      summary: Get the current user's consultant profile
+      responses:
+        "200":
+          description: Consultant profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Consultant"
+        "404":
+          description: Not a consultant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /consultants/featured:
+    get:
+      operationId: getFeaturedConsultants
+      tags: [consultants]
+      summary: Get top-rated/featured consultants
+      responses:
+        "200":
+          description: Featured consultants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Consultant"
+
+  /user/profile:
+    get:
+      operationId: getUserProfile
+      tags: [user]
+      summary: Get the current user's profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+    put:
+      operationId: updateUserProfile
+      tags: [user]
+      summary: Update the current user's profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /payments/create-checkout:
+    post:
+      operationId: createCheckoutSession
+      tags: [payments]
+      summary: Create a Stripe checkout session for premium access
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutRequest"
+      responses:
+        "200":
+          description: Checkout session URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+
+  /payments/subscription-status:
+    get:
+      operationId: getSubscriptionStatus
+      tags: [payments]
+      summary: Get user's premium subscription status
+      responses:
+        "200":
+          description: Subscription status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionStatus"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +240,197 @@ components:
       required:
         - status
 
+    Horoscope:
+      type: object
+      required: [sign, date, message, domains]
+      properties:
+        sign:
+          type: string
+        date:
+          type: string
+        message:
+          type: string
+        emoji:
+          type: string
+        domains:
+          type: array
+          items:
+            $ref: "#/components/schemas/HoroscopeDomain"
+
+    HoroscopeDomain:
+      type: object
+      required: [label, score]
+      properties:
+        label:
+          type: string
+        icon:
+          type: string
+        score:
+          type: integer
+
+    Compatibility:
+      type: object
+      required: [sign1, sign2, overallScore, message, domains]
+      properties:
+        sign1:
+          type: string
+        sign2:
+          type: string
+        overallScore:
+          type: integer
+        message:
+          type: string
+        domains:
+          type: array
+          items:
+            $ref: "#/components/schemas/CompatibilityDomain"
+
+    CompatibilityDomain:
+      type: object
+      required: [label, score]
+      properties:
+        label:
+          type: string
+        score:
+          type: integer
+
+    CompatibilityUsage:
+      type: object
+      required: [freeTestUsed, isPremium]
+      properties:
+        freeTestUsed:
+          type: boolean
+        isPremium:
+          type: boolean
+        testsRemaining:
+          type: ["integer", "null"]
+
+    PaymentRequired:
+      type: object
+      required: [error, requiresPremium]
+      properties:
+        error:
+          type: string
+        requiresPremium:
+          type: boolean
+
+    Consultant:
+      type: object
+      required: [id, name, speciality, bio, status]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        name:
+          type: string
+        speciality:
+          type: string
+        bio:
+          type: string
+        avatar:
+          type: ["string", "null"]
+        zodiacSign:
+          type: ["string", "null"]
+        rating:
+          type: ["number", "null"]
+        reviewCount:
+          type: integer
+        pricePerSession:
+          type: ["integer", "null"]
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        experience:
+          type: ["string", "null"]
+        tags:
+          type: array
+          items:
+            type: string
+
+    ConsultantApplication:
+      type: object
+      required: [name, speciality, bio]
+      properties:
+        name:
+          type: string
+        speciality:
+          type: string
+        bio:
+          type: string
+        zodiacSign:
+          type: string
+        experience:
+          type: string
+        pricePerSession:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+
+    UserProfile:
+      type: object
+      required: [userId, isPremium]
+      properties:
+        userId:
+          type: string
+        name:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        zodiacSign:
+          type: ["string", "null"]
+        birthDate:
+          type: ["string", "null"]
+        isPremium:
+          type: boolean
+        freeTestUsed:
+          type: boolean
+        createdAt:
+          type: string
+
+    UserProfileUpdate:
+      type: object
+      properties:
+        zodiacSign:
+          type: string
+        birthDate:
+          type: string
+        name:
+          type: string
+
+    CheckoutRequest:
+      type: object
+      required: [plan]
+      properties:
+        plan:
+          type: string
+          enum: [monthly, annual]
+
+    CheckoutSession:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+
+    SubscriptionStatus:
+      type: object
+      required: [isPremium, freeTestUsed]
+      properties:
+        isPremium:
+          type: boolean
+        freeTestUsed:
+          type: boolean
+        subscriptionId:
+          type: ["string", "null"]
+        currentPeriodEnd:
+          type: ["string", "null"]
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string

@@ -1,0 +1,3 @@
+- [Tailwind v4 dark mode](tailwind-v4-dark.md) — `@apply dark` is invalid in Tailwind v4; use `class="dark"` on `<html>` instead.
+- [Clerk frontend wiring](clerk-frontend.md) — publishableKeyFromHost + unconditional proxyUrl + /sign-in/*? pattern are all mandatory.
+- [Stripe non-fatal startup](stripe-startup.md) — wrap Stripe init in try/catch so server boots even without Stripe connected.
