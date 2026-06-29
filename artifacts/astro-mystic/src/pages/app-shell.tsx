@@ -38,7 +38,7 @@ export default function AppShell() {
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/app" className="flex items-center gap-2">
             <Moon className="w-6 h-6 text-[#d4a843]" />
-            <span className="font-serif text-xl font-bold tracking-widest text-white">AstroMystic</span>
+            <span className="font-serif text-xl font-bold tracking-widest text-white">LunaVox</span>
           </Link>
           
           <button 

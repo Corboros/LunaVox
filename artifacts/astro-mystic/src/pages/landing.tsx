@@ -21,7 +21,7 @@ export default function Landing() {
           </div>
           
           <h1 className="font-serif text-5xl md:text-7xl font-bold tracking-wider text-white">
-            AstroMystic
+            LunaVox
           </h1>
           <p className="text-xl md:text-2xl text-[#a89bc4] max-w-2xl mx-auto font-light">
             Découvrez les secrets que les astres vous réservent. Horoscopes profonds, compatibilité mystique et consultations privées.

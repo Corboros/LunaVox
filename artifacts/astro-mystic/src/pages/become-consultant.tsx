@@ -81,7 +81,7 @@ export default function BecomeConsultant() {
             {status === "pending" 
               ? "Votre demande est en cours d'évaluation par notre conseil astral."
               : status === "approved" 
-                ? "Vous êtes déjà un consultant certifié sur AstroMystic."
+                ? "Vous êtes déjà un consultant certifié sur LunaVox."
                 : "Votre profil est actuellement enregistré."}
           </p>
           <Link href="/app">

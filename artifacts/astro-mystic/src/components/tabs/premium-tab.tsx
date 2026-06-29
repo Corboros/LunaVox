@@ -41,7 +41,7 @@ export default function PremiumTab() {
         <div className="inline-flex items-center justify-center p-3 bg-[#d4a843]/10 rounded-full mb-2 border border-[#d4a843]/20">
           <Crown className="w-8 h-8 text-[#d4a843]" />
         </div>
-        <h2 className="font-serif text-3xl md:text-5xl text-white">AstroMystic Premium</h2>
+        <h2 className="font-serif text-3xl md:text-5xl text-white">LunaVox Premium</h2>
         <p className="text-lg text-[#a89bc4] max-w-2xl mx-auto">
           Élevez votre conscience cosmique avec un accès illimité aux arcanes.
         </p>

@@ -58,7 +58,7 @@ router.post("/create-checkout", requireAuth, async (req: any, res): Promise<void
         SELECT pr.id as price_id
         FROM stripe.products p
         JOIN stripe.prices pr ON pr.product = p.id AND pr.active = true
-        WHERE p.name = 'AstroMystic Premium'
+        WHERE p.name = 'LunaVox Premium'
           AND p.active = true
           AND pr.recurring->>'interval' = ${plan === "monthly" ? "month" : "year"}
         LIMIT 1
@@ -70,7 +70,7 @@ router.post("/create-checkout", requireAuth, async (req: any, res): Promise<void
 
     if (!priceId) {
       // Fallback: create a price on the fly for demo
-      const product = await stripe.products.create({ name: "AstroMystic Premium" });
+      const product = await stripe.products.create({ name: "LunaVox Premium" });
       const price = await stripe.prices.create({
         product: product.id,
         unit_amount: plan === "monthly" ? 999 : 7999,

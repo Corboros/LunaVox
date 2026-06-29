@@ -1,4 +1,4 @@
-# AstroMystic
+# LunaVox
 
 Application d'astrologie mystique en français — horoscopes quotidiens, compatibilité astrologique, annuaire de consultants, et abonnement premium.
 
