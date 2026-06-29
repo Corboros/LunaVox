@@ -1,6 +1,4 @@
 {
-  "buildCommand": "cd artifacts/astro-mystic && pnpm install && pnpm run build",
-  "outputDirectory": "artifacts/astro-mystic/dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
